@@ -1,4 +1,4 @@
-function [ AveAirMoistureOut,AveAirTempratureOut,AveSolTempratureOut,AveSolMassOut,AveSolConcenOut,AveSolEnthalpyOut] = cross_fcn( Ta_in,phi,Ts_in,Ps_in,Va_in,Vs_in)
+function [ AveAirMoistureOut,AveAirTempratureOut,AveSolTempratureOut,AveSolMassOut,AveSolConcenOut,AveSolEnthalpyOut] = cross_fcn( Ta_in,phi,Ts_in,Ps_in,Ma_in,Ms_in)
 % Ta_in=30;%
 % phi=0.8;%
 
@@ -11,16 +11,16 @@ rho_licl=cal_rho_licl(Ts_in,Ps_in);
 % Va_in=4000;%
 % Vs_in=4.8;%
 
-Ms_in=Vs_in*rho_licl/3600;
-Ma_in=Va_in*rho_air/3600;
+% Ms_in=Vs_in;
+% Ma_in=Va_in;
 
 H=0.5;%
-L=0.15;%
+L=0.5;%
 W=0.65;%
 
-hs_in=enthalpy(Ts_in,Ps_in);
+hs_in=sol_enthalpy(Ts_in,Ps_in);
 
-meshgrid=0.0005;
+meshgrid=0.005;
 M=ceil(L/meshgrid);
 N=ceil(H/meshgrid);
 
@@ -55,19 +55,19 @@ SolTemprature=zeros(N,M);
 SolMass=zeros(N,M);
 SolConcen=zeros(N,M);
 %% row_1 column_1
-[AirMoisture(1,1),AirTemprature(1,1),AirEnthalpy(1,1),SolTemprature(1,1),SolMass(1,1),SolConcen(1,1),SolEnthalpy(1,1)]= cross_core(Ts_in,Ps_in,Ms_in,ha_in,da_in,Ma_in,M,N,NTU,Le);
+[AirMoisture(1,1),AirTemprature(1,1),AirEnthalpy(1,1),SolTemprature(1,1),SolMass(1,1),SolConcen(1,1),SolEnthalpy(1,1)]= cross_core(Ts_in,Ps_in,Ms_in/M,ha_in,da_in,Ma_in/N,M,N,NTU,Le);
 %% row_1
 for j=2:M
-    [AirMoisture(1,j),AirTemprature(1,j),AirEnthalpy(1,j),SolTemprature(1,j),SolMass(1,j),SolConcen(1,j),SolEnthalpy(1,j)]= cross_core(Ts_in,Ps_in,Ms_in,AirEnthalpy(1,j-1),AirMoisture(1,j-1),Ma_in,M,N,NTU,Le);
+    [AirMoisture(1,j),AirTemprature(1,j),AirEnthalpy(1,j),SolTemprature(1,j),SolMass(1,j),SolConcen(1,j),SolEnthalpy(1,j)]= cross_core(Ts_in,Ps_in,Ms_in/M,AirEnthalpy(1,j-1),AirMoisture(1,j-1),Ma_in/N,M,N,NTU,Le);
 end
 %% column_1
 for i=2:N
-    [AirMoisture(i,1),AirTemprature(i,1),AirEnthalpy(i,1),SolTemprature(i,1),SolMass(i,1),SolConcen(i,1),SolEnthalpy(i,1)]= cross_core(SolTemprature(i-1,1),SolConcen(i-1,1),SolMass(i-1,1),ha_in,da_in,Ma_in,M,N,NTU,Le);
+    [AirMoisture(i,1),AirTemprature(i,1),AirEnthalpy(i,1),SolTemprature(i,1),SolMass(i,1),SolConcen(i,1),SolEnthalpy(i,1)]= cross_core(SolTemprature(i-1,1),SolConcen(i-1,1),SolMass(i-1,1),ha_in,da_in,Ma_in/N,M,N,NTU,Le);
 end
 %% row_2~row_end  column_1~column_end
 for i=2:N
     for j=2:M
-        [AirMoisture(i,j),AirTemprature(i,j),AirEnthalpy(i,j),SolTemprature(i,j),SolMass(i,j),SolConcen(i,j),SolEnthalpy(i,j)]= cross_core(SolTemprature(i-1,j),SolConcen(i-1,j),SolMass(i-1,j),AirEnthalpy(i,j-1),AirMoisture(i,j-1),Ma_in,M,N,NTU,Le);
+        [AirMoisture(i,j),AirTemprature(i,j),AirEnthalpy(i,j),SolTemprature(i,j),SolMass(i,j),SolConcen(i,j),SolEnthalpy(i,j)]= cross_core(SolTemprature(i-1,j),SolConcen(i-1,j),SolMass(i-1,j),AirEnthalpy(i,j-1),AirMoisture(i,j-1),Ma_in/N,M,N,NTU,Le);
     end
 end
 
@@ -77,11 +77,12 @@ AveAirEnthalpyOut =mean(AirEnthalpy(1:N,M));
 AveAirTempratureOut =mean(AirTemprature(1:N,M));
 
 AveSolTempratureOut =mean(SolTemprature(N,1:M));
-AveSolMassOut=mean(SolMass(N,1:M));
+AveSolMassOut=sum(SolMass(N,1:M));
 AveSolConcenOut=mean(SolConcen(N,1:M));
 AveSolEnthalpyOut=mean(SolEnthalpy(N,1:M));
 
-err=(ha_in-AveAirEnthalpyOut)*Ma_in/(sum(SolEnthalpy(N,1:M).*SolMass(N,1:M)/M)-hs_in*Ms_in)-1;
+err  = (ha_in-AveAirEnthalpyOut)*Ma_in/(sum(SolEnthalpy(N,1:M).*SolMass(N,1:M))-hs_in*Ms_in)-1;
+err2 = (da_in-AveAirMoistureOut)*Ma_in/(sum(SolMass(N,1:M))-Ms_in)-1;
 
 
 end
