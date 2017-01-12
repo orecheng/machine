@@ -1,4 +1,4 @@
-
+clear all
 hp_Tc_in=45;
 hp_Te_in=22;
 hp_cond_frac=0.3;
