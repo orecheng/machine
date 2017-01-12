@@ -1,17 +1,17 @@
-clear all
-hp_temp_cond_in=45;
-hp_temp_evap_in=22;
-hp_frac_cond=0.3;
-hp_frac_evap=0.3;
-% hp_Vol_cond=2;
-% hp_Vol_evap=2;
-hp_mass_cond=4000/3600;
-hp_mass_evap=4000/3600;
+function [hp_temp_evap_out,hp_temp_cond_out]=heatpump(hp_temp_evap_in,hp_temp_cond_in,hp_frac_evap,hp_frac_cond,hp_mass_evap,hp_mass_cond)
+% hp_temp_cond_in=45;
+% hp_temp_evap_in=22;
+% hp_frac_cond=0.3;
+% hp_frac_evap=0.3;
+% % hp_Vol_cond=2;
+% % hp_Vol_evap=2;
+% hp_mass_cond=4000/3600;
+% hp_mass_evap=4000/3600;
 
 hp_rho_cond=cal_rho_licl(hp_temp_cond_in,hp_frac_cond);
 hp_rho_evap=cal_rho_licl(hp_temp_evap_in,hp_frac_evap);
-% hp_mass_cond=hp_rho_cond*hp_Vol_cond;
-% hp_mass_evap=hp_rho_evap*hp_Vol_evap;
+% % hp_mass_cond=hp_rho_cond*hp_Vol_cond;
+% % hp_mass_evap=hp_rho_evap*hp_Vol_evap;
 
 hp_enthalpy_cond_in=sol_enthalpy(hp_temp_cond_in,hp_frac_cond);
 hp_enthalpy_evap_in=sol_enthalpy(hp_temp_evap_in,hp_frac_evap);
@@ -36,5 +36,7 @@ while(1)
         break
     end
 end
+
+
 hp_temp_cond_out=hp_temp_cond(end);
 hp_temp_evap_out=hp_temp_evap(end);
