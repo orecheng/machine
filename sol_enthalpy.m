@@ -1,4 +1,4 @@
-function h=enthalpy(t,epsilon)
+function h=sol_enthalpy(t,epsilon)
 
 X=epsilon*100;
 a=[-66.2324,11.2711,-0.79853,2.1534e-2,-1.66352e-4];
