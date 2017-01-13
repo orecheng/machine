@@ -15,7 +15,7 @@ rho_licl=cal_rho_licl(Ts_in,Ps_in);
 % Ma_in=Va_in;
 
 H=0.5;%
-L=0.5;%
+L=0.15;%
 W=0.65;%
 
 hs_in=sol_enthalpy(Ts_in,Ps_in);
