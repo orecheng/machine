@@ -1,11 +1,11 @@
 clc
 clear all
 %% input
-circu_air_temp = 20;
-circu_air_RH = 0.3;
+circu_air_temp = 30;
+circu_air_RH = 0.8;
 
 deh_sink_sol_temp(1) = 20;
-deh_sink_sol_frac(1) = 0;
+deh_sink_sol_frac(1) = 0.3;
 deh_sink_sol_mass(1) = 100;
 reg_sink_sol_temp(1) = 20;
 reg_sink_sol_frac(1) = 0.3;
@@ -15,6 +15,7 @@ deh_trans_sol_mass_in=2;
 reg_trans_sol_mass_in=2;
 deh_trans_air_mass=2;
 reg_trans_air_mass=2;
+mass_exchange_reg2deh=0.01;
 
 %% initial
 [circu_air_rho,circu_air_da,circu_air_ha] = rh2da(circu_air_temp,circu_air_RH);
@@ -29,7 +30,7 @@ reg_sink_sol_LiCl(1) = reg_sink_sol_frac*reg_sink_sol_mass;
 
 %% cal
 tic
-step=100;
+step=10;
 i=1;
 % timelength=100000;
 
@@ -40,8 +41,8 @@ i=1;
 
 while(1)
     i=i+1;
-
-%% DEH
+    
+    %% DEH
     [hp_temp_evap_out,hp_temp_cond_out]...
         =heatpump(deh_sink_sol_temp(i-1),reg_sink_sol_temp(i-1),deh_sink_sol_frac(i-1),reg_sink_sol_frac(i-1),deh_trans_sol_mass_in,reg_trans_sol_mass_in);
     
@@ -67,16 +68,16 @@ while(1)
         =solEnthalpy2Temp(deh_sink_sol_frac(i),deh_sink_sol_enth(i));
     
     deh_air_da_change(i)=deh_trans_air_da_out(i)-circu_air_da;
- %% REG  
+    %% REG
     [reg_trans_air_da_out(i),reg_trans_air_temp_out(i),reg_trans_sol_temp_out,reg_trans_sol_mass_out,reg_trans_sol_frac_out,reg_trans_sol_enth_out] ...
         = cross_fcn(circu_air_temp,circu_air_RH,hp_temp_cond_out,reg_sink_sol_frac(i-1),reg_trans_air_mass,reg_trans_sol_mass_in);
-  
+    
     reg_sink_sol_LiCl(i) ...
         = reg_sink_sol_LiCl(i-1) + (reg_trans_sol_frac_out*reg_trans_sol_mass_out-reg_sink_sol_frac(i-1)*reg_trans_sol_mass_in)*step;
     
     reg_sink_sol_mass(i) ...
         = reg_sink_sol_mass(i-1) + (reg_trans_sol_mass_out-reg_trans_sol_mass_in)*step;
-
+    
     reg_sink_sol_frac(i) ...
         = reg_sink_sol_LiCl(i)/reg_sink_sol_mass(i);
     
@@ -87,22 +88,61 @@ while(1)
         = reg_sink_sol_enth_all(i)/reg_sink_sol_mass(i);
     
     reg_sink_sol_temp(i) ...
-        =solEnthalpy2Temp(reg_sink_sol_frac(i),reg_sink_sol_enth(i));    
+        =solEnthalpy2Temp(reg_sink_sol_frac(i),reg_sink_sol_enth(i));
     
     reg_air_da_change(i)=reg_trans_air_da_out(i)-circu_air_da;
+    %% heat exchanger
+%     mass_exchange_reg2deh=0.01;
+%     [Mhotout,Thotout,Photout,Mcoldout,Tcoldout,Pcoldout] = heatexchanger(Mhotin,Thotin,Photin,Mcoldin,Tcoldin,Pcoldin);
+    
+    mass_exchange_deh2reg=(deh_sink_sol_mass(i)-reg_sink_sol_mass(i))*1e-2;
+    
+    deh_sink_sol_mass(i)...
+        =deh_sink_sol_mass(i)+( mass_exchange_reg2deh-mass_exchange_deh2reg)*step;
+    reg_sink_sol_mass(i)...
+        =reg_sink_sol_mass(i)+(-mass_exchange_reg2deh+mass_exchange_deh2reg)*step;
+    
+    deh_sink_sol_LiCl(i)...
+        =deh_sink_sol_LiCl(i) + (mass_exchange_reg2deh * reg_sink_sol_frac(i) - mass_exchange_deh2reg * deh_sink_sol_frac(i))*step;
+    reg_sink_sol_LiCl(i)...
+        =reg_sink_sol_LiCl(i) +(-mass_exchange_reg2deh * reg_sink_sol_frac(i) + mass_exchange_deh2reg * deh_sink_sol_frac(i))*step;
+    
+    deh_sink_sol_frac(i) ...
+        = deh_sink_sol_LiCl(i)/deh_sink_sol_mass(i);
+    reg_sink_sol_frac(i) ...
+        = reg_sink_sol_LiCl(i)/reg_sink_sol_mass(i);
+    
+    deh_sink_sol_enth_all(i) ...
+        = deh_sink_sol_enth_all(i)+( reg_sink_sol_enth(i)*mass_exchange_reg2deh - deh_sink_sol_enth(i) * mass_exchange_deh2reg)*step;
+    reg_sink_sol_enth_all(i) ...
+        = reg_sink_sol_enth_all(i)+(-reg_sink_sol_enth(i)*mass_exchange_reg2deh + deh_sink_sol_enth(i) * mass_exchange_deh2reg)*step;
+    
+    deh_sink_sol_enth(i) ...
+        = deh_sink_sol_enth_all(i)/deh_sink_sol_mass(i);  
+    reg_sink_sol_enth(i) ...
+        = reg_sink_sol_enth_all(i)/reg_sink_sol_mass(i);      
+    
+    deh_sink_sol_temp(i) ...
+        =solEnthalpy2Temp(deh_sink_sol_frac(i),deh_sink_sol_enth(i));
+    reg_sink_sol_temp(i) ...
+        =solEnthalpy2Temp(reg_sink_sol_frac(i),reg_sink_sol_enth(i));    
     
 
-
-        err=abs(deh_sink_sol_mass(i)-deh_sink_sol_mass(i-1));
-        if err<1e-5
-            break
-        end
-
     
- i*step
- deh_sink_sol_mass(i)
-%  if i==279
-%      save 279.mat
-%  end
+    err=abs(deh_sink_sol_mass(i)-deh_sink_sol_mass(i-1));
+%     if err<1e-5
+%         break
+%     end
+    if err<1e-5
+        break
+    end    
+    
+    
+    
+    i*step
+    deh_sink_sol_mass(i)
+    %  if i==279
+    %      save 279.mat
+    %  end
 end
 toc
