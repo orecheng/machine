@@ -5,7 +5,7 @@ circu_air_temp = 20;
 circu_air_RH = 0.3;
 
 deh_sink_sol_temp(1) = 20;
-deh_sink_sol_frac(1) = 0;
+deh_sink_sol_frac(1) = 0.3;
 deh_sink_sol_mass(1) = 100;
 reg_sink_sol_temp(1) = 20;
 reg_sink_sol_frac(1) = 0.3;
@@ -13,7 +13,7 @@ reg_sink_sol_mass(1) = 100;
 
 deh_trans_sol_mass_in=2;
 reg_trans_sol_mass_in=2;
-deh_trans_air_mass=2;
+deh_trans_air_mass=1;
 reg_trans_air_mass=2;
 
 %% initial
@@ -30,16 +30,15 @@ reg_sink_sol_LiCl(1) = reg_sink_sol_frac*reg_sink_sol_mass;
 %% cal
 tic
 step=100;
-i=1;
-% timelength=100000;
+
+timelength=100000;
 
 % load('279.mat')
 
-% for i=i:floor(timelength/step)
-%     i=i+1;
+for i=2:floor(timelength/step)
 
-while(1)
-    i=i+1;
+% while(1)
+%     i=i+1;
 
 %% DEH
     [hp_temp_evap_out,hp_temp_cond_out]...
@@ -93,7 +92,7 @@ while(1)
     
 
 
-        err=abs(deh_sink_sol_mass(i)-deh_sink_sol_mass(i-1));
+        err=abs(deh_sink_sol_enth(i)-deh_sink_sol_enth(i-1));
         if err<1e-5
             break
         end
@@ -101,8 +100,10 @@ while(1)
     
  i*step
  deh_sink_sol_mass(i)
+ err
 %  if i==279
 %      save 279.mat
 %  end
 end
 toc
+save('last_end.mat')
