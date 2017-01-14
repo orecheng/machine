@@ -43,3 +43,4 @@ A=a*x;
 B=b*x;
 C=c*x;
 Ts_out=(-B+sqrt(B^2-4*C*(A-hs_out)))/(2*C);
+end
