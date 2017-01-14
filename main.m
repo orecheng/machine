@@ -27,18 +27,16 @@ reg_sink_sol_enth_all = reg_sink_sol_enth*reg_sink_sol_mass;
 
 deh_sink_sol_LiCl(1) = deh_sink_sol_frac*deh_sink_sol_mass;
 reg_sink_sol_LiCl(1) = reg_sink_sol_frac*reg_sink_sol_mass;
-
+    he_off_on=1;% 0关热交换器，1开热交换器
 %% cal
 tic
-step=10;
+step=100;
+
+
+timelength=100000;
+% for i=2:floor(timelength/step)
+
 i=1;
-% timelength=100000;
-
-% load('279.mat')
-
-% for i=i:floor(timelength/step)
-%     i=i+1;
-
 while(1)
     i=i+1;
     
@@ -92,10 +90,26 @@ while(1)
     
     reg_air_da_change(i)=reg_trans_air_da_out(i)-circu_air_da;
     %% heat exchanger
-%     mass_exchange_reg2deh=0.01;
-%     [Mhotout,Thotout,Photout,Mcoldout,Tcoldout,Pcoldout] = heatexchanger(Mhotin,Thotin,Photin,Mcoldin,Tcoldin,Pcoldin);
+    %     mass_exchange_reg2deh=0.01;
+    
     
     mass_exchange_deh2reg=(deh_sink_sol_mass(i)-reg_sink_sol_mass(i))*1e-2;
+    
+
+    if he_off_on==0
+        %% 关热交换器
+        Thotout(i)=reg_sink_sol_temp(i);
+        frachotout=reg_sink_sol_frac(i);
+        Tcoldout(i)=deh_sink_sol_temp(i);
+        fraccoldout=deh_sink_sol_frac(i);
+    elseif he_off_on==1
+        %% 开热交换器
+        [~,Thotout(i),frachotout,~,Tcoldout(i),fraccoldout] ...
+            = heatexchanger(mass_exchange_reg2deh,reg_sink_sol_temp(i),reg_sink_sol_frac(i),mass_exchange_deh2reg,deh_sink_sol_temp(i),deh_sink_sol_frac(i));
+        %%
+    end
+    [reg_echange_enth] = sol_enthalpy(Thotout(i), frachotout);
+    [deh_echange_enth] = sol_enthalpy(Tcoldout(i),fraccoldout);
     
     deh_sink_sol_mass(i)...
         =deh_sink_sol_mass(i)+( mass_exchange_reg2deh-mass_exchange_deh2reg)*step;
@@ -113,31 +127,33 @@ while(1)
         = reg_sink_sol_LiCl(i)/reg_sink_sol_mass(i);
     
     deh_sink_sol_enth_all(i) ...
-        = deh_sink_sol_enth_all(i)+( reg_sink_sol_enth(i)*mass_exchange_reg2deh - deh_sink_sol_enth(i) * mass_exchange_deh2reg)*step;
+        = deh_sink_sol_enth_all(i)+( reg_echange_enth*mass_exchange_reg2deh - deh_echange_enth * mass_exchange_deh2reg)*step;
     reg_sink_sol_enth_all(i) ...
-        = reg_sink_sol_enth_all(i)+(-reg_sink_sol_enth(i)*mass_exchange_reg2deh + deh_sink_sol_enth(i) * mass_exchange_deh2reg)*step;
+        = reg_sink_sol_enth_all(i)+(-reg_echange_enth*mass_exchange_reg2deh + deh_echange_enth * mass_exchange_deh2reg)*step;
     
     deh_sink_sol_enth(i) ...
-        = deh_sink_sol_enth_all(i)/deh_sink_sol_mass(i);  
+        = deh_sink_sol_enth_all(i)/deh_sink_sol_mass(i);
     reg_sink_sol_enth(i) ...
-        = reg_sink_sol_enth_all(i)/reg_sink_sol_mass(i);      
+        = reg_sink_sol_enth_all(i)/reg_sink_sol_mass(i);
     
     deh_sink_sol_temp(i) ...
         =solEnthalpy2Temp(deh_sink_sol_frac(i),deh_sink_sol_enth(i));
     reg_sink_sol_temp(i) ...
-        =solEnthalpy2Temp(reg_sink_sol_frac(i),reg_sink_sol_enth(i));    
+        =solEnthalpy2Temp(reg_sink_sol_frac(i),reg_sink_sol_enth(i));
     
-
+    
     
     err=abs(deh_sink_sol_mass(i)-deh_sink_sol_mass(i-1));
-%     if err<1e-5
-%         break
-%     end
+    pr=1;
+if pr==0    
     if err<1e-5
         break
+    end
+else   
+    if i*step>timelength
+        break
     end    
-    
-    
+end   
     
     i*step
     deh_sink_sol_mass(i)
