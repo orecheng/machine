@@ -16,7 +16,7 @@ reg_trans_sol_mass_in=8000/3600;
 deh_trans_air_mass=8000/3600;
 reg_trans_air_mass=8000/3600;
 mass_exchange_reg2deh=0.12;
-he_off_on=0;% 0关热交换器，1开热交换器
+he_off_on=1;% 0关热交换器，1开热交换器
 power_compressor=6;%单位：匹
 %% initial
 [circu_air_rho,circu_air_da,circu_air_ha] = rh2da(circu_air_temp,circu_air_RH);
@@ -97,7 +97,7 @@ while(1)
     
     mass_exchange_deh2reg=(deh_sink_sol_mass(i)-reg_sink_sol_mass(i))*1e-2;
     
-
+    
     if he_off_on==0
         %% 关热交换器
         Thotout(i)=reg_sink_sol_temp(i);
@@ -147,15 +147,15 @@ while(1)
     
     err=abs(deh_sink_sol_mass(i)-deh_sink_sol_mass(i-1));
     pr=1;
-if pr==0    
-    if err<1e-5
-        break
+    if pr==0
+        if err<1e-5
+            break
+        end
+    else
+        if i*step>timelength
+            break
+        end
     end
-else   
-    if i*step>timelength
-        break
-    end    
-end   
     
     i*step
     deh_sink_sol_mass(i)

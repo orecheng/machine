@@ -26,6 +26,7 @@ while(1)
     i=i+1;
     [cop,N]=compressor(hp_temp_cond(i-1),hp_temp_evap(i-1));
     N=N*power_compressor/6;%6ƥ
+%     N=5.5;
     hp_Q_cond=(cop + 1) * N;
     hp_Q_evap=cop * N;
     hp_Q_cond_out=hp_Q_cond_in + hp_Q_cond;
