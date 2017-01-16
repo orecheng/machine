@@ -11,13 +11,12 @@ reg_sink_sol_temp(1) = 20;
 reg_sink_sol_frac(1) = 0.3;
 reg_sink_sol_mass(1) = 100;
 
-deh_trans_sol_mass_in=8000/3600;
-reg_trans_sol_mass_in=8000/3600;
-deh_trans_air_mass=8000/3600;
-reg_trans_air_mass=8000/3600;
+deh_trans_sol_mass_in=4000/3600;
+reg_trans_sol_mass_in=4000/3600;
+deh_trans_air_mass=4000/3600;
+reg_trans_air_mass=4000/3600;
 mass_exchange_reg2deh=0.12;
-he_off_on=0;% 0关热交换器，1开热交换器
-power_compressor=6;%单位：匹
+
 %% initial
 [circu_air_rho,circu_air_da,circu_air_ha] = rh2da(circu_air_temp,circu_air_RH);
 
@@ -28,10 +27,10 @@ reg_sink_sol_enth_all = reg_sink_sol_enth*reg_sink_sol_mass;
 
 deh_sink_sol_LiCl(1) = deh_sink_sol_frac*deh_sink_sol_mass;
 reg_sink_sol_LiCl(1) = reg_sink_sol_frac*reg_sink_sol_mass;
-
+    he_off_on=0;% 0关热交换器，1开热交换器
 %% cal
 tic
-step=50;
+step=20;
 
 
 timelength=86400;
@@ -42,9 +41,8 @@ while(1)
     i=i+1;
     
     %% DEH
-    
     [N(i-1),hp_temp_evap_out,hp_temp_cond_out]...
-        =heatpump(power_compressor,deh_sink_sol_temp(i-1),reg_sink_sol_temp(i-1),deh_sink_sol_frac(i-1),reg_sink_sol_frac(i-1),deh_trans_sol_mass_in,reg_trans_sol_mass_in);
+        =heatpump(deh_sink_sol_temp(i-1),reg_sink_sol_temp(i-1),deh_sink_sol_frac(i-1),reg_sink_sol_frac(i-1),deh_trans_sol_mass_in,reg_trans_sol_mass_in);
     
     [deh_trans_air_da_out(i),deh_trans_air_temp_out(i),deh_trans_sol_temp_out,deh_trans_sol_mass_out,deh_trans_sol_frac_out,deh_trans_sol_enth_out] ...
         = cross_fcn_mex(circu_air_temp,circu_air_RH,hp_temp_evap_out,deh_sink_sol_frac(i-1),deh_trans_air_mass,deh_trans_sol_mass_in);
@@ -164,6 +162,5 @@ end
     %  end
 end
 toc
-sum_N=sum(N)*step/3600;%N已经是kW
-sum_da_change=sum(deh_air_da_change)*step;
-deh_air_da_change(end)
+sum_N=sum(N)*step;
+sum_da_change=sum(da_change)

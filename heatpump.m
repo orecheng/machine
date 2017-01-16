@@ -1,4 +1,4 @@
-function [hp_temp_evap_out,hp_temp_cond_out]=heatpump(hp_temp_evap_in,hp_temp_cond_in,hp_frac_evap,hp_frac_cond,hp_mass_evap,hp_mass_cond)
+function [N,hp_temp_evap_out,hp_temp_cond_out]=heatpump(power_compressor,hp_temp_evap_in,hp_temp_cond_in,hp_frac_evap,hp_frac_cond,hp_mass_evap,hp_mass_cond)
 % hp_temp_cond_in=45;
 % hp_temp_evap_in=22;
 % hp_frac_cond=0.3;
@@ -25,6 +25,7 @@ i=1;
 while(1)
     i=i+1;
     [cop,N]=compressor(hp_temp_cond(i-1),hp_temp_evap(i-1));
+    N=N*power_compressor/6;%6ƥ
     hp_Q_cond=(cop + 1) * N;
     hp_Q_evap=cop * N;
     hp_Q_cond_out=hp_Q_cond_in + hp_Q_cond;
