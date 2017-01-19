@@ -91,8 +91,8 @@ AveSolMassOut=mean(SolMass(N,1:M));
 AveSolConcenOut=mean(SolConcen(N,1:M));
 AveSolEnthalpyOut=mean(SolEnthalpy(N,1:M));
 
-err  = (ha_in-AveAirEnthalpyOut)*Ma_in/(sum(SolEnthalpy(N,1:M).*SolMass(N,1:M))-hs_in*Ms_in)-1;
-err2 = (da_in-AveAirMoistureOut)*Ma_in/(sum(SolMass(N,1:M))-Ms_in)-1;
+err_ha=(ha_in-AveAirEnthalpyOut)*Ma_in/(sum(SolEnthalpy(N,1:M).*SolMass(N,1:M)/M)-hs_in*Ms_in)-1;
+err_da=(da_in-AveAirMoistureOut)*Ma_in/(mean(SolMass(N,1:M))-Ms_in)-1;
 
 
 end
