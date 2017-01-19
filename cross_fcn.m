@@ -65,19 +65,19 @@ SolTemprature=zeros(N,M);
 SolMass=zeros(N,M);
 SolConcen=zeros(N,M);
 %% row_1 column_1
-[AirMoisture(1,1),AirTemprature(1,1),AirEnthalpy(1,1),SolTemprature(1,1),SolMass(1,1),SolConcen(1,1),SolEnthalpy(1,1)]= cross_core(Ts_in,Ps_in,Ms_in/M,ha_in,da_in,Ma_in/N,M,N,NTU,Le);
+[AirMoisture(1,1),AirTemprature(1,1),AirEnthalpy(1,1),SolTemprature(1,1),SolMass(1,1),SolConcen(1,1),SolEnthalpy(1,1)]= cross_core(Ts_in,Ps_in,Ms_in,ha_in,da_in,Ma_in,M,N,NTU,Le);
 %% row_1
 for j=2:M
-    [AirMoisture(1,j),AirTemprature(1,j),AirEnthalpy(1,j),SolTemprature(1,j),SolMass(1,j),SolConcen(1,j),SolEnthalpy(1,j)]= cross_core(Ts_in,Ps_in,Ms_in/M,AirEnthalpy(1,j-1),AirMoisture(1,j-1),Ma_in/N,M,N,NTU,Le);
+    [AirMoisture(1,j),AirTemprature(1,j),AirEnthalpy(1,j),SolTemprature(1,j),SolMass(1,j),SolConcen(1,j),SolEnthalpy(1,j)]= cross_core(Ts_in,Ps_in,Ms_in,AirEnthalpy(1,j-1),AirMoisture(1,j-1),Ma_in,M,N,NTU,Le);
 end
 %% column_1
 for i=2:N
-    [AirMoisture(i,1),AirTemprature(i,1),AirEnthalpy(i,1),SolTemprature(i,1),SolMass(i,1),SolConcen(i,1),SolEnthalpy(i,1)]= cross_core(SolTemprature(i-1,1),SolConcen(i-1,1),SolMass(i-1,1),ha_in,da_in,Ma_in/N,M,N,NTU,Le);
+    [AirMoisture(i,1),AirTemprature(i,1),AirEnthalpy(i,1),SolTemprature(i,1),SolMass(i,1),SolConcen(i,1),SolEnthalpy(i,1)]= cross_core(SolTemprature(i-1,1),SolConcen(i-1,1),SolMass(i-1,1),ha_in,da_in,Ma_in,M,N,NTU,Le);
 end
 %% row_2~row_end  column_1~column_end
 for i=2:N
     for j=2:M
-        [AirMoisture(i,j),AirTemprature(i,j),AirEnthalpy(i,j),SolTemprature(i,j),SolMass(i,j),SolConcen(i,j),SolEnthalpy(i,j)]= cross_core(SolTemprature(i-1,j),SolConcen(i-1,j),SolMass(i-1,j),AirEnthalpy(i,j-1),AirMoisture(i,j-1),Ma_in/N,M,N,NTU,Le);
+        [AirMoisture(i,j),AirTemprature(i,j),AirEnthalpy(i,j),SolTemprature(i,j),SolMass(i,j),SolConcen(i,j),SolEnthalpy(i,j)]= cross_core(SolTemprature(i-1,j),SolConcen(i-1,j),SolMass(i-1,j),AirEnthalpy(i,j-1),AirMoisture(i,j-1),Ma_in,M,N,NTU,Le);
     end
 end
 
@@ -87,7 +87,7 @@ AveAirEnthalpyOut =mean(AirEnthalpy(1:N,M));
 AveAirTempratureOut =mean(AirTemprature(1:N,M));
 
 AveSolTempratureOut =mean(SolTemprature(N,1:M));
-AveSolMassOut=sum(SolMass(N,1:M));
+AveSolMassOut=mean(SolMass(N,1:M));
 AveSolConcenOut=mean(SolConcen(N,1:M));
 AveSolEnthalpyOut=mean(SolEnthalpy(N,1:M));
 
