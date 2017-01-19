@@ -25,7 +25,7 @@ hp_temp_evap(1)=hp_temp_evap_in-2;
 i=1;
 while(1)
     i=i+1;
-    [cop,N]=compressor(hp_temp_cond(i-1),hp_temp_evap(i-1));
+    [cop,N]=compressor(hp_temp_cond(1),hp_temp_evap(i-1));
     N=N*power_compressor/6;%6ƥ
     hp_Q_cond=(cop + 1) * N;
     hp_Q_evap=cop * N;
@@ -34,7 +34,7 @@ while(1)
     hp_temp_cond(i)=solEnthalpy2Temp(hp_frac_cond,hp_Q_cond_out/hp_mass_cond);
     hp_temp_evap(i)=solEnthalpy2Temp(hp_frac_evap,hp_Q_evap_out/hp_mass_evap);
     err=hp_temp_cond(i)-hp_temp_cond(i-1);
-    if abs(hp_temp_cond(i)-hp_temp_cond(i-1))<1e-4
+    if abs(hp_temp_evap(i)-hp_temp_evap(i-1))<1e-4
         break
     end
 end

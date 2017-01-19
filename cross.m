@@ -18,7 +18,7 @@ H=0.5;%
 L=0.15;%
 W=0.65;
 
-hs_in=enthalpy(Ts_in,Ps_in);
+hs_in=sol_enthalpy(Ts_in,Ps_in);
 
 meshgrid=0.0005;
 M=ceil(L/meshgrid);
