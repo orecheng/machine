@@ -1,4 +1,4 @@
-function [N,hp_temp_evap_out,hp_temp_cond_out]=heatpump(power_compressor,hp_temp_evap_in,hp_temp_cond_in,hp_frac_evap,hp_frac_cond,hp_mass_evap,hp_mass_cond)
+function [N,cop,hp_temp_evap_out,hp_temp_cond_out]=heatpump(power_compressor,hp_temp_evap_in,hp_temp_cond_in,hp_frac_evap,hp_frac_cond,hp_mass_evap,hp_mass_cond)
 % hp_temp_cond_in=45;
 % hp_temp_evap_in=22;
 % hp_frac_cond=0.3;
@@ -18,8 +18,9 @@ hp_enthalpy_evap_in=sol_enthalpy(hp_temp_evap_in,hp_frac_evap);
 hp_Q_cond_in=hp_mass_cond * hp_enthalpy_cond_in;
 hp_Q_evap_in=hp_mass_evap * hp_enthalpy_evap_in;
 
-hp_temp_cond(1)=hp_temp_cond_in;
-hp_temp_evap(1)=hp_temp_evap_in;
+hp_temp_cond(1)=hp_temp_cond_in+2;
+
+hp_temp_evap(1)=hp_temp_evap_in-2;
 
 i=1;
 while(1)
