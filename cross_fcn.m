@@ -1,4 +1,4 @@
-function [ AveAirMoistureOut,AveAirTempratureOut,AveAirEnthalpyOut,AveSolTempratureOut,AveSolMassOut,AveSolConcenOut,AveSolEnthalpyOut,err_ha] = cross_fcn( Ta_in,phi,Ts_in,Ps_in,Ma_in,Ms_in)
+function [ AveAirMoistureOut,AveAirTempratureOut,AveAirEnthalpyOut,AveSolTempratureOut,AveSolMassOut,AveSolConcenOut,AveSolEnthalpyOut,err_ha,err_da] = cross_fcn( Ta_in,phi,Ts_in,Ps_in,Ma_in,Ms_in)
 % Ta_in=30;%
 % phi=0.8;%
 
