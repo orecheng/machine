@@ -16,8 +16,8 @@ deh_trans_sol_mass_in=6500/3600;
 reg_trans_sol_mass_in=6500/3600;
 deh_trans_air_mass=6500/3600;
 reg_trans_air_mass=6500/3600;
-mass_exchange_reg2deh=0.2;
-he_off_on=1;% 0关热交换器，1开热交换器 
+mass_exchange_reg2deh=0.15;
+he_off_on=0;% 0关热交换器，1开热交换器 
 power_compressor=18;%压缩机功率：匹
 %% initial
 [circu_air_rho,circu_air_da,circu_air_ha] = rh2da(circu_air_temp,circu_air_RH);
@@ -190,6 +190,7 @@ toc
 sum_N=sum(N)*step/3600;%N已经是kW
 sum_da_change=sum(deh_air_da_change)*deh_trans_air_mass*step;
 deh_air_da_change(end)
+efficiency=deh_air_da_change(end)/N(end);
 deh_sink_sol_enth_all_exchange=(deh_sink_sol_enth_all_ea-deh_sink_sol_enth_all_sa)/step;
 reg_sink_sol_enth_all_exchange=(reg_sink_sol_enth_all_ea-reg_sink_sol_enth_all_sa)/step;
 %% 作图
