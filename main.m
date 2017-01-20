@@ -1,5 +1,6 @@
 clc
 clear all
+dbstop if error
 %% input
 circu_air_temp = 30;
 circu_air_RH = 0.8;
@@ -11,13 +12,13 @@ reg_sink_sol_temp(1) = 20;
 reg_sink_sol_frac(1) = 0.3;
 reg_sink_sol_mass(1) = 100;
 
-deh_trans_sol_mass_in=8000/3600;
-reg_trans_sol_mass_in=8000/3600;
-deh_trans_air_mass=8000/3600;
-reg_trans_air_mass=8000/3600;
-mass_exchange_reg2deh=0.12;
+deh_trans_sol_mass_in=6500/3600;
+reg_trans_sol_mass_in=6500/3600;
+deh_trans_air_mass=6500/3600;
+reg_trans_air_mass=6500/3600;
+mass_exchange_reg2deh=0.2;
 he_off_on=1;% 0关热交换器，1开热交换器 
-power_compressor=12;%压缩机功率：匹
+power_compressor=18;%压缩机功率：匹
 %% initial
 [circu_air_rho,circu_air_da,circu_air_ha] = rh2da(circu_air_temp,circu_air_RH);
 
