@@ -1,5 +1,5 @@
 clc
-clear all
+clear all;close all
 dbstop if error
 %% input
 circu_air_temp = 30;
@@ -16,9 +16,11 @@ deh_trans_sol_mass_in=6500/3600;
 reg_trans_sol_mass_in=6500/3600;
 deh_trans_air_mass=6500/3600;
 reg_trans_air_mass=6500/3600;
-mass_exchange_reg2deh=0.15;
-he_off_on=0;% 0关热交换器，1开热交换器 
-power_compressor=18;%压缩机功率：匹
+mass_exchange_reg2deh=0.5;
+he_off_on=0;% 0关热交换器，1开热交换器
+power_compressor=6;%压缩机功率：匹
+timelength=86400;%计算时间
+step=10;%计算步长
 %% initial
 [circu_air_rho,circu_air_da,circu_air_ha] = rh2da(circu_air_temp,circu_air_RH);
 
@@ -34,10 +36,10 @@ reg_sink_sol_LiCl(1) = reg_sink_sol_frac*reg_sink_sol_mass;
 % reg_trans_air_da_out(1)=circu_air_da;
 %% cal
 tic
-step=50;
 
 
-timelength=86400;
+
+
 % for i=2:floor(timelength/step)
 time_step=0:step:timelength;
 % hp_temp_evap_out=20;
@@ -47,12 +49,16 @@ while(1)
     
     %% DEH
     
-    [N(i),cop(i),hp_temp_evap_out(i),hp_temp_cond_out(i)]... 
+    [N(i),cop(i),hp_temp_evap_out(i),hp_temp_cond_out(i)]...
         =heatpump(power_compressor,deh_sink_sol_temp(i-1),reg_sink_sol_temp(i-1),deh_sink_sol_frac(i-1),reg_sink_sol_frac(i-1),deh_trans_sol_mass_in,reg_trans_sol_mass_in);
+    %
+    %     if imag(reg_sink_sol_temp(i-1))~=0
+    %         break
+    %     end
     
     [deh_trans_air_da_out(i),deh_trans_air_temp_out(i),deh_trans_air_enthalpy_out(i),deh_trans_sol_temp_out,deh_trans_sol_mass_out,deh_trans_sol_frac_out,deh_trans_sol_enth_out,err_ha_deh(i),err_da_deh(i)] ...
         = cross_fcn(circu_air_temp,circu_air_RH,hp_temp_evap_out(i),deh_sink_sol_frac(i-1),deh_trans_air_mass,deh_trans_sol_mass_in);
-        
+    
     deh_trans_air_enthalpy_change(i)=deh_trans_air_enthalpy_out(i)-circu_air_ha;
     
     deh_sink_sol_LiCl(i) ...
@@ -79,7 +85,7 @@ while(1)
     %% REG
     [reg_trans_air_da_out(i),reg_trans_air_temp_out(i),reg_trans_air_enthalpy_out(i),reg_trans_sol_temp_out,reg_trans_sol_mass_out,reg_trans_sol_frac_out,reg_trans_sol_enth_out,err_ha_reg(i),err_da_reg(i)] ...
         = cross_fcn(circu_air_temp,circu_air_RH,hp_temp_cond_out(i),reg_sink_sol_frac(i-1),reg_trans_air_mass,reg_trans_sol_mass_in);
-
+    
     reg_trans_air_enthalpy_change(i)=reg_trans_air_enthalpy_out(i)-circu_air_ha;
     
     reg_sink_sol_LiCl(i) ...
@@ -106,10 +112,17 @@ while(1)
     %% heat exchanger
     %     mass_exchange_reg2deh=0.01;
     
+    %
+    %     mass_exchange_deh2reg=(deh_sink_sol_mass(i)-reg_sink_sol_mass(i))*1e-2;
+    u=(deh_sink_sol_mass(i)-reg_sink_sol_mass(i));
+    H_delta=u/1100/(0.65*0.9);
+    if H_delta<0
+        H_delta=0;
+    end
+    Q=(9.8*1.1*H_delta/(5*1.2*9.15e-4)*0.025^4.774)^(1/1.774);
+    mass_exchange_deh2reg=Q/(pi*0.025^2);
     
-    mass_exchange_deh2reg=(deh_sink_sol_mass(i)-reg_sink_sol_mass(i))*1e-2;
     
-
     if he_off_on==0
         %% 关热交换器
         Thotout(i)=reg_sink_sol_temp(i);
@@ -162,15 +175,15 @@ while(1)
     
     err=abs(deh_sink_sol_mass(i)-deh_sink_sol_mass(i-1));
     pr=1;
-if pr==0    
-    if err<1e-5
-        break
+    if pr==0
+        if err<1e-5
+            break
+        end
+    else
+        if i*step>timelength
+            break
+        end
     end
-else   
-    if i*step>timelength
-        break
-    end    
-end   
     
     i*step
     deh_sink_sol_mass(i)
@@ -279,7 +292,7 @@ title('除湿空气冷量');xlabel('时间(s)');ylabel('功率（kW）');grid on
 
 subplot(4,4,16)
 plot(time_step,reg_trans_air_enthalpy_change*reg_trans_air_mass)
- ylim([0,max(reg_trans_air_enthalpy_change(100:end)*reg_trans_air_mass)*1.1])
+ylim([0,max(reg_trans_air_enthalpy_change(100:end)*reg_trans_air_mass)*1.1])
 title('再生空气热量');xlabel('时间(s)');ylabel('功率（kW）');grid on
 
 hold off
@@ -293,12 +306,12 @@ title('除湿空气冷量');xlabel('时间(s)');ylabel('功率（kW）');grid on
 
 subplot(2,4,2)
 plot(time_step,-N.*cop)
- ylim([min(-N.*cop)*1.1,0])
+ylim([min(-N.*cop)*1.1,0])
 title('压缩机冷量');xlabel('时间(s)');ylabel('功率（kW）');grid on
 
 subplot(2,4,3)
 plot(time_step,deh_sink_sol_enth_all_exchange)
-title('除湿水箱质交换热量变化');xlabel('时间(s)');ylabel('功率（kW）');grid on
+title('除湿水箱热回收热量变化');xlabel('时间(s)');ylabel('功率（kW）');grid on
 
 subplot(2,4,4)
 plot(time_step,-deh_trans_air_enthalpy_change*deh_trans_air_mass-N.*cop+deh_sink_sol_enth_all_exchange)
@@ -307,17 +320,17 @@ title('除湿水箱热量变化');xlabel('时间(s)');ylabel('功率（kW）');grid on
 
 subplot(2,4,5)
 plot(time_step,reg_trans_air_enthalpy_change*reg_trans_air_mass)
- ylim([0,max(reg_trans_air_enthalpy_change(100:end)*reg_trans_air_mass)*1.1])
+ylim([0,max(reg_trans_air_enthalpy_change(100:end)*reg_trans_air_mass)*1.1])
 title('再生空气热量');xlabel('时间(s)');ylabel('功率（kW）');grid on
 
 subplot(2,4,6)
 plot(time_step,N.*(cop+1))
- ylim([0,max(N.*(cop+1))*1.1])
+ylim([0,max(N.*(cop+1))*1.1])
 title('压缩机热量');xlabel('时间(s)');ylabel('功率（kW）');grid on
 
 subplot(2,4,7)
 plot(time_step,reg_sink_sol_enth_all_exchange)
-title('再生水箱质交换热量变化');xlabel('时间(s)');ylabel('功率（kW）');grid on
+title('再生水箱热回收热量变化');xlabel('时间(s)');ylabel('功率（kW）');grid on
 
 subplot(2,4,8)
 plot(time_step,reg_trans_air_enthalpy_change*reg_trans_air_mass-N.*(cop+1)-reg_sink_sol_enth_all_exchange)
